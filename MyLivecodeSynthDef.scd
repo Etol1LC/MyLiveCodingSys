@@ -28,59 +28,54 @@ SynthDef(\bpfbuf, {
 SynthDef(\buz,{
 	arg out = 0, freq = 440, amp=1, bfreq = 800, pan = 0, dur = 1;
 	var sig, env, sig2;
-	sig = FreeVerb.ar(Saw.ar(freq * SinOsc.kr(XLine.kr(2, 20, 4))) + SinOsc.ar(freq), 0.3 ,1, 2, 0.4);
+	sig = FreeVerb.ar(SinOsc.ar(freq  + SinOsc.ar(freq * SinOsc.kr(XLine.kr(200, 1220, 4)))), 0.3 ,1, 2, 0.4);
 	env = EnvGen.ar(Env.new([0,1,0.6,0],[0.8, 0.2, 3]), doneAction: 2);
 	sig = Pan2.ar(sig * env * amp, pan);
 	Out.ar(out,sig);
 	}).add;
 
-
-
 SynthDef(\pir, {
-	arg out = 0, pan = 0, freq = 440, amp= 1;
+	arg out = 0, pan = 0, freq = 440, amp= 1, en = 8;
 	var sig, env;
-	sig = SinOsc.ar(freq, XLine.kr(0.5, 4, 2), LFNoise0.kr(2000).range(0.2, 1)) * Saw.kr(20);
-	env = EnvGen.ar(Env([0,1,1,0],[0.4, 0.6, 2]), doneAction: 2);
+	sig = FreeVerb.ar(SinOsc.ar(freq * Saw.ar(freq * 1.6 + 1.2)), 0.5, 0.8);
+	env = EnvGen.ar(Env.sine(en), doneAction: 2);
 	sig = Pan2.ar(sig * env * amp, pan);
 	Out.ar(out, sig);
 }).add;
 
 SynthDef(\bas, {
-	arg freq= 440, out= 0, pan= 0, dur = 1, amp = 1;
-	var sig, env, sig2;
-	env = EnvGen.ar(Env.new([0,1,0],[0.5, 0.5]), doneAction: 2);
-	sig = SinOsc.ar(freq * LFTri.kr(80), mul: 0.5);
-	sig2 = SinOsc.ar(freq * Saw.kr(100), mul: 0.5);
-	sig = Pan2.ar(Mix.ar([sig + sig2]) * env * amp, pan) ;
+	arg freq= 440, out= 0, pan= 0, dur = 1, amp = 1, en = 8;
+	var sig, env;
+	env = EnvGen.ar(Env.sine(en), doneAction: 2);
+	sig = FreeVerb.ar(SinOsc.ar(freq + LFTri.kr(40).range(200, 400), mul:0.8), 0.3, 0.4);
+	sig = Pan2.ar(sig * env * amp, pan) ;
 	Out.ar(out, sig);
 }).add;
 
 SynthDef(\boh, {
-	arg freq=440, out=0, pan=0, dur = 1, amp = 1, ;
+	arg freq=440, out=0, pan=0, dur = 1, amp = 1, en = 8 ;
 	var sig, env;
-	env = EnvGen.ar(Env.new([0,1,0],[1,2]), doneAction: 2);
-	sig = SinOsc.ar(freq * Impulse.kr(XLine.kr(20, 1200, 3)));
+	env = EnvGen.ar(Env.sine(en), doneAction: 2);
+	sig = FreeVerb.ar(SinOsc.ar(freq * Pulse.ar(XLine.kr(20, freq, en) + SinOsc.kr(10).range(20,freq))), 0.5, 0.8);
 	sig = Pan2.ar(sig * env * amp, pan);
 	Out.ar(out,sig);
 }).add;
 
 SynthDef(\wer, {
 	arg freq = 440, out = 0, pan = 0, dur = 1, amp = 1, en = 8;
-	var env, sig, sig2;
+	var env, sig;
 	env = EnvGen.ar(Env.sine(en), doneAction: 2);
-	sig = PinkNoise.ar(0.03);
-	sig2 = WhiteNoise.ar(0.02).range(0.01, 2);
-	sig = Mix.ar([sig, sig2]);
+	sig = FreeVerb.ar(SinOsc.ar(freq + LFSaw.kr(freq).exprange (20, 200)), 0.5, 0.4);
 	sig = Pan2.ar(sig * env * amp, pan);
 	Out.ar(out, sig);
 }).add;
 
 SynthDef(\nio,{
-	arg out=0, pan=0, freq= 440, dur = 1, amp = 1;
+	arg out=0, pan=0, freq= 440, dur = 1, amp = 1, en = 8;
 	var sig, env, sigm;
-	sigm = Saw.kr(40).exprange(200, 6000);
-	sig = SinOsc.ar(freq * sigm, mul:0.1);
-	env = EnvGen.ar(Env.new([0,1,0.3,0.2,0],[1, 0.2,0.3,0.5]), doneAction: 2);
+	sigm = LFNoise0.kr(8).exprange(200, 4000);
+	sig = FreeVerb.ar(Pulse.ar(freq + sigm), 0.5, 0.5);
+	env = EnvGen.ar(Env.sine(en), doneAction: 2);
 	sig = Pan2.ar(sig * env * amp, pan);
 	Out.ar(out, sig);
 }).add;
@@ -96,19 +91,20 @@ SynthDef(\buffyy, {
 	Out.ar(out, sig, pan);
 }).add;
 
-SynthDef(\bd1,{ |out = 0, freq = 440, amp = 1, pan=0, dur = 1|
+SynthDef(\bd1,{ |out = 0, freq = 440, amp = 1, pan=0, dur = 1, en = 8|
 	var sig, env;
-	sig = FreeVerb.ar(SinOsc.ar(freq  * Saw.ar(1).range(2, 10), 0, amp), 0.55, 0.8);
-	env = EnvGen.ar(Env.new([0,1,0.4,0],[0.3, 0.7, 2]), doneAction: 2);
-	sig = Pan2.ar(sig * env);
-	Out.ar(out,sig, pan);
+	sig = FreeVerb.ar(SinOsc.ar(freq * SinOsc.ar(100)), 0.55, 0.2);
+	env = EnvGen.ar(Env.sine(en), doneAction: 2);
+	sig = Pan2.ar(sig);
+	Out.ar(out,sig * env * amp, pan);
 	}).add;
 
 SynthDef(\rem, {
 	arg out = 0, pan = 0, freq = 440, amp= 1, en = 8;
 	var sig, env;
-	sig = SinOsc.ar(freq, XLine.kr(0.5, 12, 0.5), LFTri.kr(30).range(0.3, 1)) * LFNoise0.kr(300);
+	sig = SinOsc.ar(freq, LFSaw.kr(XLine.kr(80, 220, 0.5)), LFTri.kr(10).range(0.3, 1));
 	env = EnvGen.ar(Env.sine(en), doneAction: 2);
+	sig = FreeVerb.ar(sig, 0.5, 0.3);
 	sig = Pan2.ar(sig * env * amp, pan);
 	Out.ar(out, sig);
 }).add;
@@ -117,9 +113,9 @@ SynthDef(\stb, {
 	arg freq= 440, amp = 1, pan = 0, out = 0;
 	var env, sig, sig1, sig2, mix, eff, fan;
 	env = EnvGen.ar(Env.new([0,1,1,0],[0.1, 0.9, 2], curve: \sin), doneAction: 2);
-	sig =  Impulse.ar(freq) * SinOsc.kr(1140);
-	sig1 = Impulse.ar(freq) * SinOsc.kr(1140 + 1.5);
-	sig2 = Impulse.ar(freq) * SinOsc.kr(1140 + 0.5);
+	sig =  Pulse.ar(freq) + SinOsc.kr(1140);
+	sig1 = LFTri.ar(freq) + SinOsc.kr(1140 + 1.5);
+	sig2 = Impulse.ar(freq) + SinOsc.kr(1140 + 0.5);
 	mix = Mix.ar([sig, sig1, sig2]);
 	eff = CombC.ar(mix, 0.1, 0.3);
 	eff = LPF.ar(eff, 1000);
@@ -131,18 +127,18 @@ SynthDef(\sud, {
 	arg freq= 440, amp = 1, pan = 0, out = 0, en = 8;
 	var env, sig;
 	env = EnvGen.ar(Env.sine(en), doneAction: 2);
-	sig = SinOsc.ar(XLine.kr(100, freq, 0.2) * LFTri.kr(8));
-	sig = HPF.ar(sig, 1200);
-	sig = Pan2.ar(sig * env * amp, pan);
-	Out.ar(out, sig );
+	sig = SinOsc.ar(freq + LFSaw.ar(50).exprange(200));
+	sig = FreeVerb.ar(sig, 0.6, 0.5);
+	sig = Pan2.ar(sig);
+	Out.ar(out, sig * env * amp, pan);
 }).add;
 
 SynthDef(\geg, {
 	arg freq= 440, amp = 1, pan = 0, out = 0, en = 4;
 	var env, sig;
 	env = EnvGen.ar(Env.sine(en), doneAction: 2);
-	sig = LFTri.ar(XLine.kr(freq, freq*1.1, 0.8) * Impulse.kr(80));
-	sig = LPF.ar(sig, 400);
+	sig = LFTri.ar(XLine.kr(freq, freq*1.1, 0.1) * Impulse.kr(100));
+	sig = LPF.ar(sig, 1400);
 	sig = Pan2.ar(sig * env * amp, pan);
 	Out.ar(out, sig);
 }).add;
@@ -161,6 +157,7 @@ SynthDef(\sin, {
 	var env, sig;
 	env = EnvGen.ar(Env.sine(en), doneAction: 2);
 	sig = SinOsc.ar(freq,XLine.kr(0,1,4),LFTri.kr(8).range(0.1,1));
+	sig = FreeVerb.ar(sig, 0.3, 0.4);
 	sig = Pan2.ar(sig * env* amp, pan);
 	Out.ar(out, sig );
 }).add;
@@ -174,9 +171,22 @@ SynthDef(\for, {
 	Out.ar(out, sig);
 }).add;
 
+SynthDef(\tir, {
+	arg freq = 440, out = 0, pan = 0, en = 8, amp = 1;
+	var sig, env, sig1, sig2;
+	env = EnvGen.ar(Env.sine(en), doneAction: 2);
+	sig = SinOsc.ar(freq + LFNoise2.ar(freq).range(120, 180));
+	sig1 = SinOsc.ar(freq + LFTri.ar(freq, 0.3).range(10,200));
+	sig2 = SinOsc.ar(freq + LFSaw.ar(freq, 0.6).range(20,80));
+	sig = FreeVerb.ar(Mix.ar([sig, sig1, sig2]), 0.4, 0.6, 0.2);
+	sig = Pan2.ar(sig * env  * amp, pan);
+	Out.ar(out, sig);
+}).add;
+
 )
 
-
+~l = Pbind(\instrument, \for, \degree, Pseq([0,1,2,3], inf), \dur, 1, \en, 1, \octave, 5)
+~l.play;
 
 
 
